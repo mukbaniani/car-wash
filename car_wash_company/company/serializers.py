@@ -1,7 +1,7 @@
 from django.db.models import query
 from rest_framework import serializers
 from .models import Branch, CarType, Order, Washer
-from datetime import datetime
+import datetime
 
 
 class BranchSerializer(serializers.ModelSerializer):
@@ -19,7 +19,7 @@ class BranchDetailSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    order_date = serializers.DateField(format="%Y-%m-%d")
+    order_date = serializers.DateTimeField(format="%Y-%m-%d-%M")
 
     class Meta:
         model = Order
@@ -27,9 +27,9 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         branch = attrs.get('branch')
-        today = datetime.now()
+        today = datetime.datetime.now()
         order_date = attrs.get('order_date')
-        if today > datetime(order_date.year, order_date.month, order_date.day):
+        if datetime.datetime(today.year, today.month, today.day, today.minute) > datetime.datetime(order_date.year, order_date.month, order_date.day, order_date.minute):
             raise serializers.ValidationError(f'{order_date} დღე დამთავრებულია შეკვეთის გაკეთება შეგიძლია მხოლოდ დღეს ან მომვალ დღეებში')
         if branch.garage_amount == 0:
             raise serializers.ValidationError('ყველა ადგილი დაკავებული')
@@ -52,6 +52,8 @@ class OrderSerializer(serializers.ModelSerializer):
         return order
 
     def update(self, instance, validated_data):
+        if instance.is_finished is True:
+            raise serializers.ValidationError('შეკვეთა დასრულებულია')
         branch = validated_data.get('branch')
         instance.order_date = self.validated_data.get('order_date')
         instance.car_type = self.validated_data.get('car_type')
@@ -70,3 +72,12 @@ class OrderSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError('ყველა მრეცხავი დაკავებულია')
         instance.save()
         return instance
+
+
+class WasherDetailSerializer(serializers.Serializer):
+    profite = serializers.CharField()
+    future_plan = serializers.CharField(read_only=True)
+    washed_car = serializers.CharField()
+
+    class Meta:
+        fields = ['profite', 'washer_car']

@@ -7,5 +7,6 @@ router.register('create-order', views.OrderCreate, basename='order-create')
 
 urlpatterns = [ 
     path('branch-list/', views.BranchList.as_view(), name='branch-list'),
-    path('branch-detail/<int:pk>/', views.BranchDetail.as_view(), name='branch-detail')
+    path('branch-detail/<int:pk>/', views.BranchDetail.as_view(), name='branch-detail'),
+    path('washer-detail', views.WasherDetail.as_view(), name='washer-datail')
 ] + router.urls

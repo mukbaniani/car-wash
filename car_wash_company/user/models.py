@@ -44,6 +44,7 @@ class User(AbstractUser):
     last_name = models.CharField(max_length=15, verbose_name=_('გვარი'))
     email = models.EmailField(unique=True, verbose_name=_('მეილი'))
     tel_number = models.CharField(max_length=20, verbose_name=_('ტელეფონის ნომერი'))
+    is_washer = models.BooleanField(default=False)
 
 
     object = UserManager()

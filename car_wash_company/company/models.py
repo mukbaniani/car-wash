@@ -2,7 +2,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 from django.utils import timezone
-from datetime import date, datetime
+from datetime import timedelta, datetime
 
 User = get_user_model()
 
@@ -24,7 +24,7 @@ class Washer(models.Model):
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE, verbose_name=_('რომელ ფილიალში მუშაობს ?'))
     user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name=_('მომხმარებელი'))
     part = models.PositiveSmallIntegerField(verbose_name=_('წილი 1 გარეცხილი მანქანიდან'))
-    profite = models.DecimalField(max_digits=10, decimal_places=8, default=0)
+    profite = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     is_free = models.BooleanField(default=True, verbose_name=_('თავისუფალია მრეცხავი ?'))
 
     class Meta:
@@ -32,6 +32,12 @@ class Washer(models.Model):
 
     def __str__(self):
         return f'{self.user}'
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.user.is_washer = True
+            self.user.save()
+        super(Washer, self).save(*args, **kwargs)
 
 
 class CarType(models.Model):
@@ -48,7 +54,7 @@ class CarType(models.Model):
 
 class Order(models.Model):
     order_date = models.DateTimeField(verbose_name=_('შეკვეთის თარიღი'), default=timezone.now)
-    finish_date = models.DateTimeField(verbose_name=_('დასრულების დრო'), blank=True, null=True)
+    is_finished = models.BooleanField(default=False, verbose_name=_('დასრულებულია ? '))
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name=_('მომხმარებელი'))
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE, verbose_name=_('ფილიალი'))
     washer = models.ForeignKey(Washer, on_delete=models.CASCADE, verbose_name=_('მრეცხავი'))
@@ -67,12 +73,15 @@ class Order(models.Model):
             self.washer.is_free = False
             self.washer.profite += self.car_type.wash_price * self.washer.part / 100
             self.washer.save()
+        elif self.is_finished is True:
+            self.washer.is_free = True
+            self.washer.save()
         super(Order, self).save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
-        today = datetime.now().strftime('%Y-%m-%d')
         if self.pk:
-            if str(self.finish_date) > today:
+            if self.is_finished is False:
                 self.washer.profite -= self.car_type.wash_price * self.washer.part / 100
+                self.washer.is_free = True
                 self.washer.save()
         super(Order, self).delete(*args, **kwargs)
