@@ -37,10 +37,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         branch = validated_data.get('branch')
-        try:
-            washer = Washer.objects.filter(branch_id=branch, is_free=True).order_by('?')[0]
-        except:
-            raise serializers.ValidationError('ყველა მრეცხავი დაკავებულია')
+        washer = Washer.objects.get_random_washer(branch)
         order = Order(
             order_date=self.validated_data.get('order_date'),
             user=self.validated_data.get('user'),
@@ -58,18 +55,15 @@ class OrderSerializer(serializers.ModelSerializer):
         instance.order_date = self.validated_data.get('order_date')
         instance.car_type = self.validated_data.get('car_type')
         if branch != instance.branch:
-            try:
-                washer = Washer.objects.filter(branch_id=branch.id, is_free=True).order_by('?')[0]
-                instance.washer.profite -= instance.car_type.wash_price * instance.washer.part / 100
-                instance.washer.is_free = True
-                instance.washer.save()
-                instance.washer = washer
-                instance.washer.profite += instance.car_type.wash_price * instance.washer.part / 100
-                instance.washer.is_free = False
-                instance.washer.save()
-                instance.branch = branch
-            except:
-                raise serializers.ValidationError('ყველა მრეცხავი დაკავებულია')
+            washer = Washer.objects.get_random_washer(branch)
+            instance.washer.profite -= instance.car_type.wash_price * instance.washer.part / 100
+            instance.washer.is_free = True
+            instance.washer.save()
+            instance.washer = washer
+            instance.washer.profite += instance.car_type.wash_price * instance.washer.part / 100
+            instance.washer.is_free = False
+            instance.washer.save()
+            instance.branch = branch
         instance.save()
         return instance
 

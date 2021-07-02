@@ -1,3 +1,4 @@
+from .manager import WasherManager
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
@@ -19,12 +20,14 @@ class Branch(models.Model):
     def __str__(self):
         return self.address
 
+
 class Washer(models.Model):
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE, verbose_name=_('რომელ ფილიალში მუშაობს ?'))
     user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name=_('მომხმარებელი'))
     part = models.PositiveSmallIntegerField(verbose_name=_('წილი 1 გარეცხილი მანქანიდან'))
     profite = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     is_free = models.BooleanField(default=True, verbose_name=_('თავისუფალია მრეცხავი ?'))
+    objects = WasherManager()
 
     class Meta:
         verbose_name = _('მრეცხავები')
