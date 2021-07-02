@@ -2,7 +2,6 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 from django.utils import timezone
-from datetime import timedelta, datetime
 
 User = get_user_model()
 
@@ -72,9 +71,6 @@ class Order(models.Model):
             self.branch.save()
             self.washer.is_free = False
             self.washer.profite += self.car_type.wash_price * self.washer.part / 100
-            self.washer.save()
-        elif self.is_finished is True:
-            self.washer.is_free = True
             self.washer.save()
         super(Order, self).save(*args, **kwargs)
 

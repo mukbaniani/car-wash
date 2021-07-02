@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .tokens import encode_reset_token
 from django.contrib.sites.shortcuts import get_current_site
+from django.conf import settings
 
 
 class Mail:
@@ -11,7 +12,7 @@ class Mail:
         send_mail(
             'reset password',
             f'click here to reset your password {current_site.domain}/api/update-password/{encode_reset_token(user)}',
-            'zura.mukbaniani.11@gmail.com',
+            f'{settings.EMAIL_HOST_USER}',
             [f'{to}'],
             fail_silently=False,
         )

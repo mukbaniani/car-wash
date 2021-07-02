@@ -3,7 +3,7 @@ from .serializers import BranchSerializer, OrderSerializer, BranchDetailSerializ
 from rest_framework import generics, permissions, viewsets
 from .models import Branch, CarType, Order, Washer
 from .permissions import CanDelete, IsWasher
-from django.db.models import Count, Sum, Q
+from django.db.models import Count, Q
 
 
 class BranchList(generics.ListAPIView):

@@ -29,8 +29,8 @@ class OrderSerializer(serializers.ModelSerializer):
         branch = attrs.get('branch')
         today = datetime.datetime.now()
         order_date = attrs.get('order_date')
-        if datetime.datetime(today.year, today.month, today.day, today.minute) > datetime.datetime(order_date.year, order_date.month, order_date.day, order_date.minute):
-            raise serializers.ValidationError(f'{order_date} დღე დამთავრებულია შეკვეთის გაკეთება შეგიძლია მხოლოდ დღეს ან მომვალ დღეებში')
+        # if datetime.datetime(today.year, today.month, today.day, today.minute) > datetime.datetime(order_date.year, order_date.month, order_date.day, order_date.minute):
+        #     raise serializers.ValidationError(f'{order_date} დღე დამთავრებულია შეკვეთის გაკეთება შეგიძლია მხოლოდ დღეს ან მომვალ დღეებში')
         if branch.garage_amount == 0:
             raise serializers.ValidationError('ყველა ადგილი დაკავებული')
         return attrs
