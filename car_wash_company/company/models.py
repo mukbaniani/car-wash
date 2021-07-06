@@ -56,7 +56,6 @@ class CarType(models.Model):
 
 class Order(models.Model):
     order_date = models.DateTimeField(verbose_name=_('შეკვეთის თარიღი'), default=timezone.now)
-    is_finished = models.BooleanField(default=False, verbose_name=_('დასრულებულია ? '))
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name=_('მომხმარებელი'))
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE, verbose_name=_('ფილიალი'))
     washer = models.ForeignKey(Washer, on_delete=models.CASCADE, verbose_name=_('მრეცხავი'))
@@ -79,7 +78,7 @@ class Order(models.Model):
 
     def delete(self, *args, **kwargs):
         if self.pk:
-            if self.is_finished is False:
+            if self.washer.is_free is False:
                 self.washer.profite -= self.car_type.wash_price * self.washer.part / 100
                 self.washer.is_free = True
                 self.washer.save()

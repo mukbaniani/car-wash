@@ -1,7 +1,7 @@
-from django.db.models import query
 from rest_framework import serializers
 from .models import Branch, CarType, Order, Washer
-import datetime
+from django.utils import timezone
+from .fields import IsFreeField
 
 
 class BranchSerializer(serializers.ModelSerializer):
@@ -11,11 +11,10 @@ class BranchSerializer(serializers.ModelSerializer):
 
 
 class BranchDetailSerializer(serializers.ModelSerializer):
-    branch = serializers.SlugRelatedField(many=True, queryset=CarType.objects.all(), slug_field='address')
-
     class Meta:
         model = CarType
-        fields = ['id', 'car_type', 'wash_price', 'branch']
+        fields = '__all__'
+        depth = 1
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -27,10 +26,10 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         branch = attrs.get('branch')
-        today = datetime.datetime.now()
+        today = timezone.now()
         order_date = attrs.get('order_date')
-        # if datetime.datetime(today.year, today.month, today.day, today.minute) > datetime.datetime(order_date.year, order_date.month, order_date.day, order_date.minute):
-        #     raise serializers.ValidationError(f'{order_date} დღე დამთავრებულია შეკვეთის გაკეთება შეგიძლია მხოლოდ დღეს ან მომვალ დღეებში')
+        if today > order_date:
+            raise serializers.ValidationError(f'{order_date} დღე დამთავრებულია შეკვეთის გაკეთება შეგიძლია მხოლოდ დღეს ან მომვალ დღეებში')
         if branch.garage_amount == 0:
             raise serializers.ValidationError('ყველა ადგილი დაკავებული')
         return attrs
@@ -69,9 +68,27 @@ class OrderSerializer(serializers.ModelSerializer):
 
 
 class WasherDetailSerializer(serializers.Serializer):
-    profite = serializers.CharField()
     future_plan = serializers.CharField(read_only=True)
-    washed_car = serializers.CharField()
+    washed_car = serializers.CharField(read_only=True)
 
     class Meta:
-        fields = ['profite', 'washer_car']
+        fields = ['future_plan', 'washer_car']
+
+
+class WasherFinishTaskSerializer(serializers.ModelSerializer):
+    id = serializers.SerializerMethodField('get_id')
+    part = serializers.SerializerMethodField('get_part')
+    is_free = IsFreeField()
+
+    class Meta:
+        model = Washer
+        fields = ['id', 'part', 'is_free']
+
+    def get_id(self, obj):
+        return obj.get('id')
+
+    def get_part(self, obj):
+        return obj.get('part')
+
+    def get_is_free(self, obj):
+        return obj.get('is_free')
