@@ -135,8 +135,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'djangot123@gmail.com'
-EMAIL_HOST_PASSWORD = 'djangodjango'
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
 
 JWT_SECRET = SECRET_KEY
 JWT_ALGORITHM = 'HS256'
